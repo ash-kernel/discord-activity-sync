@@ -3,7 +3,16 @@ import { ActivityType, Client } from "./rpc/client";
 import { getAsset } from "./assets";
 import { log } from "./logger";
 import { getConfig } from "./config";
-import { getGitBranch } from "./git";
+import { getGitBranch, getGitOrigin } from "./git";
+
+const sessionStartTime = Date.now();
+let lastFilePath = "";
+let vslsApi: any = null;
+
+export const setVslsApi = (api: any) => {
+  vslsApi = api;
+};
+
 
 interface Activity {
   state?: string;
@@ -18,6 +27,7 @@ interface Activity {
     small_image?: string;
     small_text?: string;
   };
+  buttons?: { label: string; url: string; }[];
   type?: ActivityType.Playing | ActivityType.Listening | ActivityType.Watching | ActivityType.Competing;
 }
 
@@ -94,6 +104,11 @@ const setFile = (t: vscode.TextEditor, config: any) => {
   const col = t.selection.start.character + 1;
   const totalLines = t.document.lineCount;
 
+  if (config.timeTracking === "file" && filePath !== lastFilePath) {
+    activityData.timestamps = { start: Date.now() };
+    lastFilePath = filePath;
+  }
+
   let details = "";
   if (config.showFileName) {
     details += `Editing ${fileName}`;
@@ -114,6 +129,32 @@ const setFile = (t: vscode.TextEditor, config: any) => {
     details: details,
     assets: {
       large_image: getAsset({ fileName, filePath }),
+      small_image: getAsset({ name: "vscode" }),
+      small_text: "VS Code"
+    },
+  });
+  throttledSetActivity();
+};
+
+const setDebugging = (config: any) => {
+  Object.assign(activityData, {
+    state: getStateString(config),
+    details: "Debugging...",
+    assets: {
+      large_image: getAsset({ name: "vscode" }),
+      small_image: getAsset({ name: "vscode" }),
+      small_text: "VS Code"
+    },
+  });
+  throttledSetActivity();
+};
+
+const setPairProgramming = (config: any) => {
+  Object.assign(activityData, {
+    state: getStateString(config),
+    details: "Pair Programming",
+    assets: {
+      large_image: getAsset({ name: "vscode" }),
       small_image: getAsset({ name: "vscode" }),
       small_text: "VS Code"
     },
@@ -150,10 +191,43 @@ const activityData: Activity = {
 export const updateActivity = () => {
   const config = getConfig();
 
+  if (config.timeTracking === "none") {
+    delete activityData.timestamps;
+  } else if (config.timeTracking === "session") {
+    activityData.timestamps = { start: sessionStartTime };
+  }
+
+  if (config.buttonEnabled) {
+    let url = config.buttonUrl;
+    if (url === "{git-origin}") {
+      url = getGitOrigin() || "";
+    }
+    if (url && url.length > 0) {
+      activityData.buttons = [
+        {
+          label: config.buttonLabel,
+          url: url,
+        }
+      ];
+    } else {
+      delete activityData.buttons;
+    }
+  } else {
+    delete activityData.buttons;
+  }
+
   if (config.idleTimeout > 0) {
     if (Date.now() - lastUserActivityTime > config.idleTimeout * 60000) {
       return setIdle();
     }
+  }
+
+  if (config.showLiveShare && vslsApi && vslsApi.session && vslsApi.session.role !== 0) {
+    return setPairProgramming(config);
+  }
+
+  if (config.showDebugging && vscode.debug.activeDebugSession) {
+    return setDebugging(config);
   }
 
   const t = vscode.window.activeTextEditor;

@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { log } from "./logger";
-import { client, updateActivity } from "./activity";
+import { client, updateActivity, setVslsApi } from "./activity";
 
 let idleCheckInterval: NodeJS.Timeout;
 
@@ -15,8 +15,26 @@ export const activate = (context: vscode.ExtensionContext) => {
     }),
     vscode.languages.onDidChangeDiagnostics(() => {
       updateActivity();
+    }),
+    vscode.debug.onDidChangeActiveDebugSession(() => {
+      updateActivity();
     })
   );
+
+  const vslsExtension = vscode.extensions.getExtension("ms-vsls.vsls");
+  if (vslsExtension) {
+    vslsExtension.activate().then(() => {
+      if (vslsExtension.exports && typeof vslsExtension.exports.getApi === "function") {
+        vslsExtension.exports.getApi().then((api: any) => {
+          if (api) {
+            setVslsApi(api);
+            api.onDidChangeSession(() => updateActivity());
+            updateActivity();
+          }
+        });
+      }
+    });
+  }
 
   // Check for idle every minute
   idleCheckInterval = setInterval(() => {

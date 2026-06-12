@@ -74,6 +74,37 @@
           "type": "number",
           "default": 5,
           "description": "Number of minutes of inactivity before showing 'Idle' status. Set to 0 to disable."
+        },
+        "discord-activity-sync.timeTracking": {
+          "type": "string",
+          "enum": ["session", "file", "none"],
+          "default": "session",
+          "description": "How to track elapsed time. 'session' for extension active time, 'file' resets when changing files."
+        },
+        "discord-activity-sync.buttonEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable interactive buttons on your Discord profile"
+        },
+        "discord-activity-sync.buttonLabel": {
+          "type": "string",
+          "default": "View Repository",
+          "description": "The text shown on the button"
+        },
+        "discord-activity-sync.buttonUrl": {
+          "type": "string",
+          "default": "{git-origin}",
+          "description": "The URL for the button. Use '{git-origin}' for your git repository's origin."
+        },
+        "discord-activity-sync.showDebugging": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show 'Debugging...' state when a debug session is active"
+        },
+        "discord-activity-sync.showLiveShare": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show 'Pair Programming' state when a Live Share session is active"
         }
       }
     }
