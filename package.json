@@ -1,0 +1,105 @@
+{
+  "name": "discord-activity-sync",
+  "displayName": "Discord Activity Sync",
+  "description": "A simple no-config Discord RPC extension",
+  "version": "0.0.3",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ash-kernel/discord-activity-sync"
+  },
+  "publisher": "ash-kernel",
+  "license": "MIT",
+  "main": "./dist/extension.js",
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "keywords": [
+    "discord",
+    "rich",
+    "presence",
+    "rpc",
+    "status",
+    "activity"
+  ],
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "extensionKind": [
+    "ui"
+  ],
+  "galleryBanner": {
+    "color": "#5865F2",
+    "theme": "dark"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "Discord Activity Sync",
+      "properties": {
+        "discord-activity-sync.showFileName": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the active file name in your Discord status"
+        },
+        "discord-activity-sync.showLineNumbers": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the current line and column numbers"
+        },
+        "discord-activity-sync.showTotalLines": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the total number of lines in the active file"
+        },
+        "discord-activity-sync.showWorkspace": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the active workspace/project name"
+        },
+        "discord-activity-sync.showGitBranch": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the current Git branch name"
+        },
+        "discord-activity-sync.showDiagnostics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the number of errors and warnings in the workspace"
+        },
+        "discord-activity-sync.idleTimeout": {
+          "type": "number",
+          "default": 5,
+          "description": "Number of minutes of inactivity before showing 'Idle' status. Set to 0 to disable."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run build",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "build": "yarn run check-types && node esbuild.js --production",
+    "package": "vsce package --no-yarn",
+    "deploy": "vsce publish --no-yarn",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "25.6.0",
+    "@types/vscode": "^1.116.0",
+    "@vscode/vsce": "^3.9.1",
+    "esbuild": "^0.28.0",
+    "esbuild-plugin-yaml": "^0.0.1",
+    "eslint": "10.2.1",
+    "npm-run-all": "^4.1.5",
+    "typescript": "6.0.3",
+    "typescript-eslint": "^8.58.2"
+  },
+  "packageManager": "yarn@4.12.0"
+}
